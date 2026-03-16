@@ -20,7 +20,7 @@ python3 -m http.server 8080
 
 ## Adding a house
 
-1. Drop a transparent PNG into `Cropped Houses Transparent/` and add its path to `images.json`.
+1. Drop a transparent PNG into `Houses/` and add its path to `images.json`.
 2. Add an entry to `houses.json`:
 ```json
 { "address": "123 Example St, Somerville", "square": "Davis Square", "lat": 42.3965, "lng": -71.1220 }
