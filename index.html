@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quintessential Houses of Somerville</title>
+    <title>Quintessential Homes of Somerville</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/maplibre-gl@4.1.0/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@4.1.0/dist/maplibre-gl.css" rel="stylesheet" />
     <style>
         * {
             margin: 0;
@@ -94,33 +96,320 @@
             font-weight: 900;
             font-size: 1.3em;
         }
+
+        .section-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .section-nav.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            opacity: 0.15;
+            transition: opacity 0.3s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            opacity: 0.7;
+        }
+
+        .nav-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #000;
+            flex-shrink: 0;
+            transition: transform 0.3s;
+        }
+
+        .nav-item.active .nav-dot {
+            transform: scale(1.6);
+        }
+
+        .nav-label {
+            font-size: 0.6rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #000;
+            white-space: nowrap;
+        }
+
+        .section-kicker {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 0.75rem;
+        }
+
+        .intro-section {
+            padding: 6rem 4rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .intro-body {
+            max-width: 640px;
+        }
+
+        .intro-body p {
+            font-size: 1.15rem;
+            line-height: 1.9;
+            color: #222;
+            margin-bottom: 1.75rem;
+        }
+
+        .intro-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .map-section {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            align-items: start;
+            gap: 4rem;
+            padding: 6rem 0;
+        }
+
+        .intro-text {
+            padding: 2rem 0;
+            position: sticky;
+            top: 6rem;
+        }
+
+        .intro-text h2 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: #000;
+        }
+
+        .intro-text p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .house-display {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 4rem;
+            margin-top: -3rem;
+        }
+
+        .house-display img {
+            width: 100%;
+            height: 70vh;
+            object-fit: contain;
+            opacity: 0.3;
+            transition: opacity 0.4s ease;
+        }
+
+        .house-display img.active {
+            opacity: 1;
+        }
+
+        .all-sections-wrapper {
+            display: flex;
+            align-items: start;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 4rem;
+            gap: 4rem;
+        }
+
+        .sections-container {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .persistent-map {
+            width: 210px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 6rem;
+            padding-top: 2rem;
+        }
+
+        .map-container {
+            width: 100%;
+            aspect-ratio: 1;
+        }
+
+        .house-info {
+            margin-top: 1.25rem;
+            padding: 0 0.25rem;
+            height: 3.5rem;
+        }
+
+        .house-info-address {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 0.25rem;
+        }
+
+        .house-info-type {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .map-container > div {
+            width: 100%;
+            height: 100%;
+        }
+
+        
+        .marker {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .marker-dot {
+            width: 8px;
+            height: 8px;
+            background: #000;
+            border-radius: 50%;
+        }
+
+        .marker-label {
+            font-family: 'Playfair Display', serif;
+            font-size: 11px;
+            font-weight: 700;
+            color: #000;
+            white-space: nowrap;
+        }
+
     </style>
 </head>
 <body>
     <section class="hero">
         <div class="hero-content">
-            <h1 class="hero-title">Quintessential Houses of <span class="city-name">Somerville</span></h1>
+            <h1 class="hero-title">Quintessential Homes of <span class="city-name">Somerville, Massachusetts</span></h1>
         </div>
         <div class="street" id="street-row-1"></div>
         <div class="street" id="street-row-2"></div>
         <div class="street" id="street-row-3"></div>
     </section>
 
-    <div style="height: 100vh; background: #fff;"></div>
+    <section class="intro-section" id="section-intro">
+        <div class="intro-body">
+            <p>Somerville is a city of houses. Not the grand estates of the Back Bay or the sterile condominiums rising along the waterfront, but the modest, densely packed homes of working families—triple-deckers stacked like layer cakes, Victorians with peeling paint and proud cornices, colonials squeezed shoulder-to-shoulder on streets that were never meant for cars.</p>
+            <p>For over a century, these buildings have absorbed the lives of immigrants, laborers, artists, and students. They have been divided and subdivided, painted and repainted, neglected and lovingly restored. They are the physical record of a city in constant flux, and yet they endure—anchoring neighborhoods that might otherwise be unrecognizable from one decade to the next.</p>
+            <p>What follows is a small portrait of that inheritance: five houses, five addresses, five glimpses into the architectural character that makes Somerville unlike anywhere else in Greater Boston.</p>
+        </div>
+    </section>
+
+    <div class="all-sections-wrapper">
+        <div class="sections-container">
+            <section class="map-section" id="section-1">
+                <div class="intro-text">
+                    <p class="section-kicker">Victorian</p>
+                    <h2>A Living Archive</h2>
+                    <p>These homes represent over a century of architectural character—triple-deckers, Victorians, and colonials that have sheltered generations of families in one of Greater Boston's most vibrant communities.</p>
+                    <p>Walk down any street in Somerville and you'll encounter a rich tapestry of wooden facades, ornate porches, and colorful paint schemes that reflect the diverse immigrants and working families who built this city.</p>
+                    <p>From the grand Victorians near Tufts University to the iconic triple-deckers of Davis Square, each neighborhood tells its own story through architecture that has endured decades of change while maintaining its distinctive character.</p>
+                </div>
+                <div class="house-display" id="house-display"></div>
+            </section>
+
+            <section class="map-section" id="section-2">
+                <div class="intro-text">
+                    <p class="section-kicker">Triple-Decker</p>
+                    <h2>Street by Street</h2>
+                    <p>Beyond the well-known squares and transit corridors, Somerville's residential streets hold some of the city's most quietly remarkable architecture. These are not showpieces—they are homes that have simply endured.</p>
+                    <p>Each block tells a different story. A row of Italianates on one street gives way to a cluster of two-families on the next. Paint colors change, porches are added and removed, but the bones remain. Somerville's housing stock is, in many ways, the most honest record of the city's history.</p>
+                    <p>Here are five more addresses—drawn from different corners of the city—that speak to that continuity.</p>
+                </div>
+                <div class="house-display" id="house-display-2"></div>
+            </section>
+
+            <section class="map-section" id="section-3">
+                <div class="intro-text">
+                    <p class="section-kicker">Queen Anne</p>
+                    <h2>Ornament & Character</h2>
+                    <p>The Queen Anne style arrived in Somerville during the 1880s and left an indelible mark on its hillside streets. Characterized by asymmetrical facades, wraparound porches, and an exuberant mix of surface textures, these homes were built for a newly prosperous merchant class eager to display their status.</p>
+                    <p>Spindle-work, patterned shingles, and decorative gables distinguish these houses from their plainer neighbors. Many have survived largely intact, their ornamental woodwork preserved by owners who understood what they had.</p>
+                    <p>These five homes represent some of the finest remaining examples of the style in the city.</p>
+                </div>
+                <div class="house-display" id="house-display-3"></div>
+            </section>
+
+            <section class="map-section" id="section-4">
+                <div class="intro-text">
+                    <p class="section-kicker">Colonial Revival</p>
+                    <h2>A Return to Order</h2>
+                    <p>By the turn of the twentieth century, the exuberance of the Queen Anne had given way to a quieter sensibility. The Colonial Revival looked backward—to the symmetry and restraint of early American architecture—as a corrective to Victorian excess.</p>
+                    <p>In Somerville, these homes typically feature centered doorways with transom lights, double-hung windows arranged in careful rows, and modest but dignified facades. They were built by families who valued permanence over spectacle.</p>
+                    <p>The five homes here speak to that tradition—understated, well-proportioned, and still standing after more than a century.</p>
+                </div>
+                <div class="house-display" id="house-display-4"></div>
+            </section>
+        </div>
+
+        <div class="persistent-map">
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+            <div class="house-info">
+                <p class="house-info-address" id="house-info-address"></p>
+                <p class="house-info-type" id="house-info-type"></p>
+            </div>
+            <nav class="section-nav">
+                <div class="nav-item" data-target="section-1">
+                    <span class="nav-dot"></span>
+                    <span class="nav-label">Victorian</span>
+                </div>
+                <div class="nav-item" data-target="section-2">
+                    <span class="nav-dot"></span>
+                    <span class="nav-label">Triple-Decker</span>
+                </div>
+                <div class="nav-item" data-target="section-3">
+                    <span class="nav-dot"></span>
+                    <span class="nav-label">Queen Anne</span>
+                </div>
+                <div class="nav-item" data-target="section-4">
+                    <span class="nav-dot"></span>
+                    <span class="nav-label">Colonial Revival</span>
+                </div>
+            </nav>
+        </div>
+    </div>
 
     <script>
-        async function populateStreets() {
-            const response = await fetch('images.json');
-            const houseImages = await response.json();
+        function populateStreets(houseImages) {
             const rows = [
                 document.getElementById('street-row-1'),
                 document.getElementById('street-row-2'),
                 document.getElementById('street-row-3')
             ];
-            const totalHouses = 18;
+            const totalHomes = 18;
 
             rows.forEach((row, rowIndex) => {
-                for (let i = 0; i < totalHouses; i++) {
+                for (let i = 0; i < totalHomes; i++) {
                     const img = document.createElement('img');
                     img.src = houseImages[(i + rowIndex * 3) % houseImages.length];
                     img.alt = 'House in Greater Boston';
@@ -129,6 +418,8 @@
             });
         }
 
+        const navSectionIds = ['section-1', 'section-2', 'section-3', 'section-4'];
+
         function handleParallax() {
             const scrollY = window.scrollY;
             const row1 = document.getElementById('street-row-1');
@@ -136,17 +427,158 @@
             const row3 = document.getElementById('street-row-3');
             const heroContent = document.querySelector('.hero-content');
 
-            // Headline
             heroContent.style.transform = `translateY(${scrollY * 0.4}px)`;
-
-            // Top row moves slowest (furthest away)
             row1.style.transform = `translateY(${scrollY * 0.12}px)`;
             row2.style.transform = `translateY(${scrollY * 0.06}px)`;
-            // Bottom row moves fastest (closest)
             row3.style.transform = `translateY(${scrollY * 0.02}px)`;
+
+            // Update active nav item
+            let current = null;
+            navSectionIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && el.getBoundingClientRect().top <= window.innerHeight * 0.5) {
+                    current = id;
+                }
+            });
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.target === current);
+            });
         }
 
-        document.addEventListener('DOMContentLoaded', populateStreets);
+        const nav = document.querySelector('.section-nav');
+        new IntersectionObserver(([entry]) => {
+            nav.classList.toggle('visible', !entry.isIntersecting);
+        }, { threshold: 0 }).observe(document.querySelector('.hero'));
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.getElementById(item.dataset.target)
+                    .scrollIntoView({ behavior: 'instant' });
+            });
+        });
+
+        const allHouseData = [
+            { address: '139 W Adams St, Somerville', type: 'Triple-Decker', lat: 42.3901, lng: -71.1012 },
+            { address: '47 Summer St, Somerville', type: 'Victorian', lat: 42.3876, lng: -71.0932 },
+            { address: '215 Highland Ave, Somerville', type: 'Colonial', lat: 42.3921, lng: -71.1089 },
+            { address: '82 Elm St, Somerville', type: 'Dutch Colonial', lat: 42.3858, lng: -71.1001 },
+            { address: '310 Broadway, Somerville', type: 'Queen Anne', lat: 42.3947, lng: -71.0978 },
+            { address: '58 Josephine Ave, Somerville', type: 'Italianate', lat: 42.3865, lng: -71.1055 },
+            { address: '174 College Ave, Somerville', type: 'Triple-Decker', lat: 42.4012, lng: -71.1198 },
+            { address: '23 Chester St, Somerville', type: 'Federal', lat: 42.3834, lng: -71.0967 },
+            { address: '91 Warren Ave, Somerville', type: 'Craftsman Bungalow', lat: 42.3889, lng: -71.1134 },
+            { address: '6 Hamlet St, Somerville', type: 'Second Empire', lat: 42.3923, lng: -71.0889 },
+            { address: '33 Pinckney St, Somerville', type: 'Queen Anne', lat: 42.3879, lng: -71.1043 },
+            { address: '118 Summer St, Somerville', type: 'Queen Anne', lat: 42.3891, lng: -71.0956 },
+            { address: '76 Laurel St, Somerville', type: 'Queen Anne', lat: 42.3934, lng: -71.1072 },
+            { address: '204 Highland Ave, Somerville', type: 'Queen Anne', lat: 42.3908, lng: -71.1085 },
+            { address: '14 Orchard St, Somerville', type: 'Queen Anne', lat: 42.3862, lng: -71.1021 },
+            { address: '88 Central St, Somerville', type: 'Colonial Revival', lat: 42.3871, lng: -71.0998 },
+            { address: '152 Summer St, Somerville', type: 'Colonial Revival', lat: 42.3896, lng: -71.0944 },
+            { address: '29 Vine St, Somerville', type: 'Colonial Revival', lat: 42.3942, lng: -71.1103 },
+            { address: '67 School St, Somerville', type: 'Colonial Revival', lat: 42.3855, lng: -71.1067 },
+            { address: '311 Elm St, Somerville', type: 'Colonial Revival', lat: 42.3918, lng: -71.1015 },
+        ];
+
+        const mapStyle = {
+            version: 8,
+            sources: {
+                'carto': {
+                    type: 'raster',
+                    tiles: [
+                        'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png',
+                        'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png',
+                        'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png'
+                    ],
+                    tileSize: 256,
+                    attribution: '© CARTO © OpenStreetMap contributors'
+                }
+            },
+            layers: [{ id: 'carto', type: 'raster', source: 'carto', minzoom: 0, maxzoom: 19 }]
+        };
+
+let sharedMap;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const response = await fetch('images.json');
+            const houseImages = await response.json();
+            populateStreets(houseImages);
+            initSharedMap();
+            initSection({ displayId: 'house-display',   images: houseImages, data: allHouseData.slice(0, 5),   imageOffset: 0  });
+            initSection({ displayId: 'house-display-2', images: houseImages, data: allHouseData.slice(5, 10),  imageOffset: 5  });
+            initSection({ displayId: 'house-display-3', images: houseImages, data: allHouseData.slice(10, 15), imageOffset: 10 });
+            initSection({ displayId: 'house-display-4', images: houseImages, data: allHouseData.slice(15, 20), imageOffset: 15 });
+        });
+
+        function initSharedMap() {
+            sharedMap = new maplibregl.Map({
+                container: 'map',
+                style: mapStyle,
+                center: [-71.0995, 42.3876],
+                zoom: 12,
+                interactive: false,
+                attributionControl: false
+            });
+
+            sharedMap.on('load', () => {
+                sharedMap.addSource('active-house', {
+                    type: 'geojson',
+                    data: { type: 'Feature', geometry: { type: 'Point', coordinates: [allHouseData[0].lng, allHouseData[0].lat] } }
+                });
+                sharedMap.addLayer({
+                    id: 'active-house-dot',
+                    type: 'circle',
+                    source: 'active-house',
+                    paint: {
+                        'circle-radius': 8,
+                        'circle-color': '#000',
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#fff',
+                        'circle-opacity': 1,
+                        'circle-opacity-transition': { duration: 250 },
+                        'circle-stroke-opacity': 1,
+                        'circle-stroke-opacity-transition': { duration: 250 }
+                    }
+                });
+            });
+        }
+
+        function initSection({ displayId, images, data, imageOffset }) {
+            const display = document.getElementById(displayId);
+            for (let i = 0; i < data.length; i++) {
+                const img = document.createElement('img');
+                img.src = images[(i + imageOffset) % images.length];
+                img.alt = 'Home in Somerville';
+                img.dataset.index = i;
+                display.appendChild(img);
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    entry.target.classList.toggle('active', entry.isIntersecting);
+                    if (entry.isIntersecting) {
+                        updateMap(data[parseInt(entry.target.dataset.index)]);
+                    }
+                });
+            }, { rootMargin: '-35% 0px -35% 0px' });
+
+            display.querySelectorAll('img').forEach(img => observer.observe(img));
+        }
+
+        const easing = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
+
+        function updateMap(house) {
+            document.getElementById('house-info-address').textContent = house.address;
+            document.getElementById('house-info-type').textContent = house.type;
+            if (sharedMap && sharedMap.getSource('active-house')) {
+                sharedMap.getSource('active-house').setData({
+                    type: 'Feature',
+                    geometry: { type: 'Point', coordinates: [house.lng, house.lat] }
+                });
+                sharedMap.easeTo({ center: [house.lng, house.lat], zoom: 12, duration: 1800, easing });
+            }
+        }
+
         window.addEventListener('scroll', handleParallax);
     </script>
 </body>
