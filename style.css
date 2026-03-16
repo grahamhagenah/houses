@@ -442,5 +442,7 @@ body {
     .house-display img {
         height: 90vw;
         object-fit: contain;
+        display: block;
+        margin: 0 auto;
     }
 }
