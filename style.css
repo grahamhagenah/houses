@@ -435,14 +435,12 @@ body {
     .house-display {
         margin-top: 0;
         gap: 1.5rem;
-        margin-left: -1.5rem;
-        margin-right: -1.5rem;
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
     }
 
     .house-display img {
         height: 90vw;
         object-fit: contain;
-        display: block;
-        margin: 0 auto;
     }
 }
