@@ -1,6 +1,6 @@
 # Quintessential Homes of Somerville
 
-A scrollytelling webpage about architectural styles in Somerville, MA. Vanilla HTML/CSS/JS — no framework, no build step.
+A scroll-driven editorial about architectural styles in Somerville, MA. Vanilla HTML/CSS/JS — no framework, no build step.
 
 ## Running locally
 
