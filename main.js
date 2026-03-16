@@ -1,0 +1,299 @@
+const HOUSES_PER_SECTION = 5;
+
+const sections = [
+  {
+    id: 'section-1',
+    label: 'Victorian',
+    title: 'A Living Archive',
+    paragraphs: [
+      'These homes represent over a century of architectural character—triple-deckers, Victorians, and colonials that have sheltered generations of families in one of Greater Boston\'s most vibrant communities.',
+      'Walk down any street in Somerville and you\'ll encounter a rich tapestry of wooden facades, ornate porches, and colorful paint schemes that reflect the diverse immigrants and working families who built this city.',
+      'From the grand Victorians near Tufts University to the iconic triple-deckers of Davis Square, each neighborhood tells its own story through architecture that has endured decades of change while maintaining its distinctive character.'
+    ]
+  },
+  {
+    id: 'section-2',
+    label: 'Triple-Decker',
+    title: 'Street by Street',
+    paragraphs: [
+      'Beyond the well-known squares and transit corridors, Somerville\'s residential streets hold some of the city\'s most quietly remarkable architecture. These are not showpieces—they are homes that have simply endured.',
+      'Each block tells a different story. A row of Italianates on one street gives way to a cluster of two-families on the next. Paint colors change, porches are added and removed, but the bones remain. Somerville\'s housing stock is, in many ways, the most honest record of the city\'s history.',
+      'Here are five more addresses—drawn from different corners of the city—that speak to that continuity.'
+    ]
+  },
+  {
+    id: 'section-3',
+    label: 'Queen Anne',
+    title: 'Ornament & Character',
+    paragraphs: [
+      'The Queen Anne style arrived in Somerville during the 1880s and left an indelible mark on its hillside streets. Characterized by asymmetrical facades, wraparound porches, and an exuberant mix of surface textures, these homes were built for a newly prosperous merchant class eager to display their status.',
+      'Spindle-work, patterned shingles, and decorative gables distinguish these houses from their plainer neighbors. Many have survived largely intact, their ornamental woodwork preserved by owners who understood what they had.',
+      'These five homes represent some of the finest remaining examples of the style in the city.'
+    ]
+  },
+  {
+    id: 'section-4',
+    label: 'Colonial Revival',
+    title: 'A Return to Order',
+    paragraphs: [
+      'By the turn of the twentieth century, the exuberance of the Queen Anne had given way to a quieter sensibility. The Colonial Revival looked backward—to the symmetry and restraint of early American architecture—as a corrective to Victorian excess.',
+      'In Somerville, these homes typically feature centered doorways with transom lights, double-hung windows arranged in careful rows, and modest but dignified facades. They were built by families who valued permanence over spectacle.',
+      'The five homes here speak to that tradition—understated, well-proportioned, and still standing after more than a century.'
+    ]
+  }
+];
+
+function buildSections() {
+    const container = document.getElementById('sections-container');
+    sections.forEach(section => {
+        const el = document.createElement('section');
+        el.className = 'map-section';
+        el.id = section.id;
+
+        const introText = document.createElement('div');
+        introText.className = 'intro-text';
+
+        const kicker = document.createElement('p');
+        kicker.className = 'section-kicker';
+        kicker.textContent = section.label;
+        introText.appendChild(kicker);
+
+        const h2 = document.createElement('h2');
+        h2.textContent = section.title;
+        introText.appendChild(h2);
+
+        section.paragraphs.forEach(text => {
+            const p = document.createElement('p');
+            p.textContent = text;
+            introText.appendChild(p);
+        });
+
+        const houseDisplay = document.createElement('div');
+        houseDisplay.className = 'house-display';
+        houseDisplay.id = `house-display-${section.id}`;
+
+        el.appendChild(introText);
+        el.appendChild(houseDisplay);
+        container.appendChild(el);
+    });
+}
+
+function buildNav() {
+    const nav = document.getElementById('section-nav');
+    sections.forEach(section => {
+        const item = document.createElement('div');
+        item.className = 'nav-item';
+        item.dataset.target = section.id;
+
+        const dot = document.createElement('span');
+        dot.className = 'nav-dot';
+
+        const label = document.createElement('span');
+        label.className = 'nav-label';
+        label.textContent = section.label;
+
+        item.appendChild(dot);
+        item.appendChild(label);
+        nav.appendChild(item);
+
+        item.addEventListener('click', () => {
+            document.getElementById(section.id).scrollIntoView({ behavior: 'instant' });
+        });
+    });
+
+    new IntersectionObserver(([entry]) => {
+        nav.classList.toggle('visible', !entry.isIntersecting);
+    }, { threshold: 0 }).observe(document.querySelector('.hero'));
+}
+
+function handleParallax() {
+    const scrollY = window.scrollY;
+    const row1 = document.getElementById('street-row-1');
+    const row2 = document.getElementById('street-row-2');
+    const row3 = document.getElementById('street-row-3');
+    const heroContent = document.querySelector('.hero-content');
+
+    heroContent.style.transform = `translateY(${scrollY * 0.4}px)`;
+    row1.style.transform = `translateY(${scrollY * 0.12}px)`;
+    row2.style.transform = `translateY(${scrollY * 0.06}px)`;
+    row3.style.transform = `translateY(${scrollY * 0.02}px)`;
+
+    const divider = document.querySelector('.highway-divider');
+    if (divider) {
+        const extra = (scrollY - divider.offsetTop) * 0.3;
+        divider.style.transform = `translateY(${-Math.max(0, extra)}px)`;
+    }
+
+    // Update active nav item
+    let current = null;
+    sections.forEach(s => {
+        const el = document.getElementById(s.id);
+        if (el && el.getBoundingClientRect().top <= window.innerHeight * 0.5) current = s.id;
+    });
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.target === current);
+    });
+
+    if (mobileLabelReady) {
+        const mobileLabel = document.getElementById('mobile-section-label');
+        if (mobileLabel) {
+            const section = sections.find(s => s.id === current);
+            mobileLabel.textContent = section ? section.label : '';
+            mobileLabel.classList.toggle('visible', !!current);
+        }
+    }
+}
+
+let mobileLabelReady = false;
+
+function populateStreets(houseImages) {
+    const rows = [
+        document.getElementById('street-row-1'),
+        document.getElementById('street-row-2'),
+        document.getElementById('street-row-3'),
+    ];
+    const totalHomes = 18;
+
+    rows.forEach((row, rowIndex) => {
+        for (let i = 0; i < totalHomes; i++) {
+            const img = document.createElement('img');
+            img.src = houseImages[(i + rowIndex * 3) % houseImages.length];
+            img.alt = 'House in Greater Boston';
+            row.appendChild(img);
+        }
+    });
+}
+
+const mapStyle = {
+    version: 8,
+    sources: {
+        'carto': {
+            type: 'raster',
+            tiles: [
+                'https://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}@2x.png',
+                'https://b.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}@2x.png',
+                'https://c.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}@2x.png'
+            ],
+            tileSize: 256,
+            attribution: '© CARTO © OpenStreetMap contributors'
+        }
+    },
+    layers: [{ id: 'carto', type: 'raster', source: 'carto', minzoom: 0, maxzoom: 19 }]
+};
+
+let sharedMap;
+
+function initSharedMap(allHouseData) {
+    sharedMap = new maplibregl.Map({
+        container: 'map',
+        style: mapStyle,
+        center: [-71.0995, 42.3876],
+        zoom: 12,
+        interactive: false,
+        attributionControl: false,
+        padding: { top: 20, bottom: 20, left: 40, right: 40 }
+    });
+
+    sharedMap.on('load', () => {
+        setTimeout(() => sharedMap.resize(), 100);
+        sharedMap.addSource('active-house', {
+            type: 'geojson',
+            data: { type: 'Feature', geometry: { type: 'Point', coordinates: [allHouseData[0].lng, allHouseData[0].lat] } }
+        });
+        sharedMap.addLayer({
+            id: 'active-house-dot',
+            type: 'circle',
+            source: 'active-house',
+            paint: {
+                'circle-radius': 8,
+                'circle-color': '#000',
+                'circle-stroke-width': 2,
+                'circle-stroke-color': '#fff',
+                'circle-opacity': 1,
+                'circle-opacity-transition': { duration: 250 },
+                'circle-stroke-opacity': 1,
+                'circle-stroke-opacity-transition': { duration: 250 }
+            }
+        });
+    });
+}
+
+function initSection({ displayId, images, data, imageOffset }) {
+    const display = document.getElementById(displayId);
+    for (let i = 0; i < data.length; i++) {
+        const img = document.createElement('img');
+        img.src = images[(i + imageOffset) % images.length];
+        img.alt = 'Home in Somerville';
+        img.dataset.index = i;
+        img.style.cursor = 'pointer';
+        img.addEventListener('click', () => {
+            img.scrollIntoView({ behavior: 'instant', block: 'center' });
+            display.querySelectorAll('img').forEach(el => el.classList.remove('active'));
+            img.classList.add('active');
+            updateMap(data[i]);
+        });
+        display.appendChild(img);
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            entry.target.classList.toggle('active', entry.isIntersecting);
+            if (entry.isIntersecting) {
+                updateMap(data[parseInt(entry.target.dataset.index)]);
+            }
+        });
+    }, { rootMargin: '-35% 0px -35% 0px' });
+
+    display.querySelectorAll('img').forEach(img => observer.observe(img));
+}
+
+const easing = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
+
+function updateMap(house) {
+    document.getElementById('house-info-address').textContent = house.address.replace(', Somerville', '');
+    document.getElementById('house-info-type').textContent = house.square;
+    if (sharedMap && sharedMap.getSource('active-house')) {
+        sharedMap.getSource('active-house').setData({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: [house.lng, house.lat] }
+        });
+        sharedMap.easeTo({ center: [house.lng, house.lat], zoom: 12, duration: 1800, easing });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    buildSections();
+    buildNav();
+
+    const firstKicker = document.querySelector('#section-1 .section-kicker');
+    if (firstKicker) {
+        new IntersectionObserver(([entry]) => {
+            mobileLabelReady = !entry.isIntersecting;
+            if (!mobileLabelReady) {
+                const mobileLabel = document.getElementById('mobile-section-label');
+                if (mobileLabel) mobileLabel.classList.remove('visible');
+            }
+        }, { threshold: 0 }).observe(firstKicker);
+    }
+
+    const [imagesResponse, housesResponse] = await Promise.all([
+        fetch('images.json'),
+        fetch('houses.json')
+    ]);
+    const houseImages = await imagesResponse.json();
+    const allHouseData = await housesResponse.json();
+
+    populateStreets(houseImages);
+    initSharedMap(allHouseData);
+
+    sections.forEach((section, i) => {
+        initSection({
+            displayId: `house-display-${section.id}`,
+            images: houseImages,
+            data: allHouseData.slice(i * HOUSES_PER_SECTION, (i + 1) * HOUSES_PER_SECTION),
+            imageOffset: i * HOUSES_PER_SECTION
+        });
+    });
+
+    window.addEventListener('scroll', handleParallax);
+});

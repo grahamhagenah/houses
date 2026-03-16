@@ -1,0 +1,22 @@
+[
+  { "address": "139 W Adams St, Somerville", "square": "Magoun Square", "lat": 42.3901, "lng": -71.1012 },
+  { "address": "47 Summer St, Somerville", "square": "Ball Square", "lat": 42.3876, "lng": -71.0932 },
+  { "address": "215 Highland Ave, Somerville", "square": "Teele Square", "lat": 42.3921, "lng": -71.1089 },
+  { "address": "82 Elm St, Somerville", "square": "Davis Square", "lat": 42.3858, "lng": -71.1001 },
+  { "address": "310 Broadway, Somerville", "square": "Ball Square", "lat": 42.3947, "lng": -71.0978 },
+  { "address": "58 Josephine Ave, Somerville", "square": "Davis Square", "lat": 42.3865, "lng": -71.1055 },
+  { "address": "174 College Ave, Somerville", "square": "Teele Square", "lat": 42.4012, "lng": -71.1198 },
+  { "address": "23 Chester St, Somerville", "square": "Union Square", "lat": 42.3834, "lng": -71.0967 },
+  { "address": "91 Warren Ave, Somerville", "square": "Davis Square", "lat": 42.3889, "lng": -71.1134 },
+  { "address": "6 Hamlet St, Somerville", "square": "Magoun Square", "lat": 42.3923, "lng": -71.0889 },
+  { "address": "33 Pinckney St, Somerville", "square": "Davis Square", "lat": 42.3879, "lng": -71.1043 },
+  { "address": "118 Summer St, Somerville", "square": "Ball Square", "lat": 42.3891, "lng": -71.0956 },
+  { "address": "76 Laurel St, Somerville", "square": "Teele Square", "lat": 42.3934, "lng": -71.1072 },
+  { "address": "204 Highland Ave, Somerville", "square": "Davis Square", "lat": 42.3908, "lng": -71.1085 },
+  { "address": "14 Orchard St, Somerville", "square": "Davis Square", "lat": 42.3862, "lng": -71.1021 },
+  { "address": "88 Central St, Somerville", "square": "Ball Square", "lat": 42.3871, "lng": -71.0998 },
+  { "address": "152 Summer St, Somerville", "square": "Ball Square", "lat": 42.3896, "lng": -71.0944 },
+  { "address": "29 Vine St, Somerville", "square": "Teele Square", "lat": 42.3942, "lng": -71.1103 },
+  { "address": "67 School St, Somerville", "square": "Davis Square", "lat": 42.3855, "lng": -71.1067 },
+  { "address": "311 Elm St, Somerville", "square": "Davis Square", "lat": 42.3918, "lng": -71.1015 }
+]
