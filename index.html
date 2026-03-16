@@ -83,6 +83,19 @@
             height: 200px;
         }
 
+        .highway-divider {
+            width: 100%;
+            position: relative;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .highway-divider img {
+            width: 100%;
+            display: block;
+            object-fit: cover;
+        }
+
         .hero-title {
             font-family: 'Playfair Display', serif;
             font-weight: 700;
@@ -149,11 +162,11 @@
         }
 
         .section-kicker {
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.1em;
+            font-size: 0.65rem;
+            font-weight: 500;
+            letter-spacing: 0.12em;
             text-transform: uppercase;
-            color: #999;
+            color: #bbb;
             margin-bottom: 0.75rem;
         }
 
@@ -161,10 +174,21 @@
             padding: 6rem 4rem;
             display: flex;
             justify-content: center;
+            position: relative;
+            z-index: 1;
         }
 
         .intro-body {
             max-width: 640px;
+        }
+
+        .intro-body h2 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 2.5rem;
+            line-height: 1.15;
+            color: #000;
+            margin-bottom: 1.5rem;
         }
 
         .intro-body p {
@@ -184,6 +208,10 @@
             align-items: start;
             gap: 4rem;
             padding: 6rem 0;
+        }
+
+        .map-section + .map-section {
+            border-top: 1px solid #e5e5e5;
         }
 
         .intro-text {
@@ -219,8 +247,8 @@
             width: 100%;
             height: 70vh;
             object-fit: contain;
-            opacity: 0.3;
-            transition: opacity 0.4s ease;
+            opacity: 0.6;
+            transition: opacity 1.2s ease;
         }
 
         .house-display img.active {
@@ -242,11 +270,11 @@
         }
 
         .persistent-map {
-            width: 210px;
+            width: 260px;
             flex-shrink: 0;
             position: sticky;
             top: 6rem;
-            padding-top: 2rem;
+            padding-top: 8rem;
         }
 
         .map-container {
@@ -317,11 +345,16 @@
 
     <section class="intro-section" id="section-intro">
         <div class="intro-body">
+            <h2>Built to Last</h2>
             <p>Somerville is a city of houses. Not the grand estates of the Back Bay or the sterile condominiums rising along the waterfront, but the modest, densely packed homes of working families—triple-deckers stacked like layer cakes, Victorians with peeling paint and proud cornices, colonials squeezed shoulder-to-shoulder on streets that were never meant for cars.</p>
             <p>For over a century, these buildings have absorbed the lives of immigrants, laborers, artists, and students. They have been divided and subdivided, painted and repainted, neglected and lovingly restored. They are the physical record of a city in constant flux, and yet they endure—anchoring neighborhoods that might otherwise be unrecognizable from one decade to the next.</p>
             <p>What follows is a small portrait of that inheritance: five houses, five addresses, five glimpses into the architectural character that makes Somerville unlike anywhere else in Greater Boston.</p>
         </div>
     </section>
+
+    <div class="highway-divider">
+        <img src="Other Images/highway.png" alt="Highway" />
+    </div>
 
     <div class="all-sections-wrapper">
         <div class="sections-container">
@@ -404,7 +437,7 @@
             const rows = [
                 document.getElementById('street-row-1'),
                 document.getElementById('street-row-2'),
-                document.getElementById('street-row-3')
+                document.getElementById('street-row-3'),
             ];
             const totalHomes = 18;
 
@@ -432,6 +465,13 @@
             row2.style.transform = `translateY(${scrollY * 0.06}px)`;
             row3.style.transform = `translateY(${scrollY * 0.02}px)`;
 
+            const divider = document.querySelector('.highway-divider');
+            if (divider) {
+                const extra = (scrollY - divider.offsetTop) * 0.3;
+                divider.style.transform = `translateY(${-Math.max(0, extra)}px)`;
+            }
+
+
             // Update active nav item
             let current = null;
             navSectionIds.forEach(id => {
@@ -458,26 +498,26 @@
         });
 
         const allHouseData = [
-            { address: '139 W Adams St, Somerville', type: 'Triple-Decker', lat: 42.3901, lng: -71.1012 },
-            { address: '47 Summer St, Somerville', type: 'Victorian', lat: 42.3876, lng: -71.0932 },
-            { address: '215 Highland Ave, Somerville', type: 'Colonial', lat: 42.3921, lng: -71.1089 },
-            { address: '82 Elm St, Somerville', type: 'Dutch Colonial', lat: 42.3858, lng: -71.1001 },
-            { address: '310 Broadway, Somerville', type: 'Queen Anne', lat: 42.3947, lng: -71.0978 },
-            { address: '58 Josephine Ave, Somerville', type: 'Italianate', lat: 42.3865, lng: -71.1055 },
-            { address: '174 College Ave, Somerville', type: 'Triple-Decker', lat: 42.4012, lng: -71.1198 },
-            { address: '23 Chester St, Somerville', type: 'Federal', lat: 42.3834, lng: -71.0967 },
-            { address: '91 Warren Ave, Somerville', type: 'Craftsman Bungalow', lat: 42.3889, lng: -71.1134 },
-            { address: '6 Hamlet St, Somerville', type: 'Second Empire', lat: 42.3923, lng: -71.0889 },
-            { address: '33 Pinckney St, Somerville', type: 'Queen Anne', lat: 42.3879, lng: -71.1043 },
-            { address: '118 Summer St, Somerville', type: 'Queen Anne', lat: 42.3891, lng: -71.0956 },
-            { address: '76 Laurel St, Somerville', type: 'Queen Anne', lat: 42.3934, lng: -71.1072 },
-            { address: '204 Highland Ave, Somerville', type: 'Queen Anne', lat: 42.3908, lng: -71.1085 },
-            { address: '14 Orchard St, Somerville', type: 'Queen Anne', lat: 42.3862, lng: -71.1021 },
-            { address: '88 Central St, Somerville', type: 'Colonial Revival', lat: 42.3871, lng: -71.0998 },
-            { address: '152 Summer St, Somerville', type: 'Colonial Revival', lat: 42.3896, lng: -71.0944 },
-            { address: '29 Vine St, Somerville', type: 'Colonial Revival', lat: 42.3942, lng: -71.1103 },
-            { address: '67 School St, Somerville', type: 'Colonial Revival', lat: 42.3855, lng: -71.1067 },
-            { address: '311 Elm St, Somerville', type: 'Colonial Revival', lat: 42.3918, lng: -71.1015 },
+            { address: '139 W Adams St, Somerville', square: 'Magoun Square', lat: 42.3901, lng: -71.1012 },
+            { address: '47 Summer St, Somerville', square: 'Ball Square', lat: 42.3876, lng: -71.0932 },
+            { address: '215 Highland Ave, Somerville', square: 'Teele Square', lat: 42.3921, lng: -71.1089 },
+            { address: '82 Elm St, Somerville', square: 'Davis Square', lat: 42.3858, lng: -71.1001 },
+            { address: '310 Broadway, Somerville', square: 'Ball Square', lat: 42.3947, lng: -71.0978 },
+            { address: '58 Josephine Ave, Somerville', square: 'Davis Square', lat: 42.3865, lng: -71.1055 },
+            { address: '174 College Ave, Somerville', square: 'Teele Square', lat: 42.4012, lng: -71.1198 },
+            { address: '23 Chester St, Somerville', square: 'Union Square', lat: 42.3834, lng: -71.0967 },
+            { address: '91 Warren Ave, Somerville', square: 'Davis Square', lat: 42.3889, lng: -71.1134 },
+            { address: '6 Hamlet St, Somerville', square: 'Magoun Square', lat: 42.3923, lng: -71.0889 },
+            { address: '33 Pinckney St, Somerville', square: 'Davis Square', lat: 42.3879, lng: -71.1043 },
+            { address: '118 Summer St, Somerville', square: 'Ball Square', lat: 42.3891, lng: -71.0956 },
+            { address: '76 Laurel St, Somerville', square: 'Teele Square', lat: 42.3934, lng: -71.1072 },
+            { address: '204 Highland Ave, Somerville', square: 'Davis Square', lat: 42.3908, lng: -71.1085 },
+            { address: '14 Orchard St, Somerville', square: 'Davis Square', lat: 42.3862, lng: -71.1021 },
+            { address: '88 Central St, Somerville', square: 'Ball Square', lat: 42.3871, lng: -71.0998 },
+            { address: '152 Summer St, Somerville', square: 'Ball Square', lat: 42.3896, lng: -71.0944 },
+            { address: '29 Vine St, Somerville', square: 'Teele Square', lat: 42.3942, lng: -71.1103 },
+            { address: '67 School St, Somerville', square: 'Davis Square', lat: 42.3855, lng: -71.1067 },
+            { address: '311 Elm St, Somerville', square: 'Davis Square', lat: 42.3918, lng: -71.1015 },
         ];
 
         const mapStyle = {
@@ -486,9 +526,9 @@
                 'carto': {
                     type: 'raster',
                     tiles: [
-                        'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png',
-                        'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png',
-                        'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png'
+                        'https://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}@2x.png',
+                        'https://b.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}@2x.png',
+                        'https://c.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}@2x.png'
                     ],
                     tileSize: 256,
                     attribution: '© CARTO © OpenStreetMap contributors'
@@ -517,7 +557,8 @@ let sharedMap;
                 center: [-71.0995, 42.3876],
                 zoom: 12,
                 interactive: false,
-                attributionControl: false
+                attributionControl: false,
+                padding: { top: 20, bottom: 20, left: 40, right: 40 }
             });
 
             sharedMap.on('load', () => {
@@ -550,6 +591,13 @@ let sharedMap;
                 img.src = images[(i + imageOffset) % images.length];
                 img.alt = 'Home in Somerville';
                 img.dataset.index = i;
+                img.style.cursor = 'pointer';
+                img.addEventListener('click', () => {
+                    img.scrollIntoView({ behavior: 'instant', block: 'center' });
+                    display.querySelectorAll('img').forEach(el => el.classList.remove('active'));
+                    img.classList.add('active');
+                    updateMap(data[i]);
+                });
                 display.appendChild(img);
             }
 
@@ -568,8 +616,8 @@ let sharedMap;
         const easing = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
 
         function updateMap(house) {
-            document.getElementById('house-info-address').textContent = house.address;
-            document.getElementById('house-info-type').textContent = house.type;
+            document.getElementById('house-info-address').textContent = house.address.replace(', Somerville', '');
+            document.getElementById('house-info-type').textContent = house.square;
             if (sharedMap && sharedMap.getSource('active-house')) {
                 sharedMap.getSource('active-house').setData({
                     type: 'Feature',
