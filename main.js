@@ -1,4 +1,6 @@
 const HOUSES_PER_SECTION = 5;
+const isMobile = window.innerWidth <= 768;
+const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
 
 const sections = [
   {
@@ -106,12 +108,36 @@ function buildNav() {
     }, { threshold: 0 }).observe(document.querySelector('.hero'));
 }
 
+// Cached DOM references for scroll handler
+let parallaxEls = null;
+
+function getParallaxEls() {
+    if (parallaxEls) return parallaxEls;
+    parallaxEls = {
+        row1: document.getElementById('street-row-1'),
+        row2: document.getElementById('street-row-2'),
+        row3: document.getElementById('street-row-3'),
+        heroContent: document.querySelector('.hero-content'),
+        highway: document.querySelector('.highway-divider'),
+        wrapper: document.querySelector('.intro-highway-wrapper'),
+        allSections: document.querySelector('.all-sections-wrapper'),
+        introSections: document.querySelectorAll('.intro-section'),
+        navItems: document.querySelectorAll('.nav-item'),
+        mobileLabel: document.getElementById('mobile-section-label'),
+        trainDivider: document.querySelector('.train-divider'),
+        trainLeft: document.querySelector('.train-left'),
+    };
+    return parallaxEls;
+}
+
+let mobileLabelReady = false;
+let citationsInView = false;
+let prevScrollY = window.scrollY;
+const introOffsets = new Array(3).fill(0);
+
 function handleParallax() {
     const scrollY = window.scrollY;
-    const row1 = document.getElementById('street-row-1');
-    const row2 = document.getElementById('street-row-2');
-    const row3 = document.getElementById('street-row-3');
-    const heroContent = document.querySelector('.hero-content');
+    const { row1, row2, row3, heroContent, highway, wrapper, allSections, introSections, navItems, mobileLabel, trainDivider, trainLeft } = getParallaxEls();
 
     heroContent.style.transform = `translateY(${scrollY * 0.4}px)`;
     row1.style.transform = `translateY(${scrollY * 0.12}px)`;
@@ -119,67 +145,61 @@ function handleParallax() {
     row3.style.transform = `translateY(${scrollY * 0.02}px)`;
 
     const scrollDelta = scrollY - prevScrollY;
-    document.querySelectorAll('.intro-section').forEach((section, i) => {
+    introSections.forEach((section, i) => {
         const body = section.querySelector('.intro-body');
         if (!body) return;
-        if (introOffsets[i] === undefined) introOffsets[i] = 0;
         const rect = section.getBoundingClientRect();
         const inView = rect.top < window.innerHeight && rect.bottom > 0;
         if (inView) {
             const progress = (window.innerHeight - rect.bottom) / (window.innerHeight + rect.height);
-            const p = Math.max(0, Math.min(1, progress));
-            const counteract = Math.sin(p * Math.PI) * 0.72;
+            const counteract = Math.sin(clamp(progress, 0, 1) * Math.PI) * 0.72;
             introOffsets[i] += scrollDelta * counteract;
+            const maxOffset = (section.offsetHeight - body.offsetHeight) / 2;
+            introOffsets[i] = clamp(introOffsets[i], -maxOffset, maxOffset);
+        } else {
+            introOffsets[i] = 0;
         }
-        const maxOffset = (section.offsetHeight - body.offsetHeight) / 2;
-        introOffsets[i] = Math.max(-maxOffset, Math.min(maxOffset, introOffsets[i]));
         body.style.transform = `translateY(${introOffsets[i]}px)`;
     });
     prevScrollY = scrollY;
 
-    // Highway: scroll-tied translateY so it rises from below naturally
-    const highway = document.querySelector('.highway-divider');
-    const wrapper = document.querySelector('.intro-highway-wrapper');
-    const allSections = document.querySelector('.all-sections-wrapper');
+    // Highway scroll-tied transform
     if (highway && wrapper && allSections) {
         const wrapperRect = wrapper.getBoundingClientRect();
         const allSectionsRect = allSections.getBoundingClientRect();
         if (wrapperRect.top > 0) {
-            // Wrapper entering: highway rises from below tied to scroll
-            const progress = Math.max(0, Math.min(1, 1 - wrapperRect.top / window.innerHeight));
+            const progress = clamp(1 - wrapperRect.top / window.innerHeight, 0, 1);
             highway.style.transform = `translateY(${(1 - progress) * 100}%)`;
         } else if (allSectionsRect.top < window.innerHeight) {
-            // All-sections entering: highway scrolls off screen upward at page speed
-            const exit = Math.max(0, Math.min(1, 1 - allSectionsRect.top / window.innerHeight));
+            const exit = clamp(1 - allSectionsRect.top / window.innerHeight, 0, 1);
             highway.style.transform = `translateY(-${exit * window.innerHeight}px)`;
         } else {
             highway.style.transform = 'translateY(0)';
         }
     }
 
-    // Update active nav item
+    // Active nav item
     let current = null;
     sections.forEach(s => {
         const el = document.getElementById(s.id);
         if (el && el.getBoundingClientRect().top <= window.innerHeight * 0.5) current = s.id;
     });
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.toggle('active', item.dataset.target === current);
-    });
+    navItems.forEach(item => item.classList.toggle('active', item.dataset.target === current));
 
-    if (mobileLabelReady) {
-        const mobileLabel = document.getElementById('mobile-section-label');
-        if (mobileLabel) {
-            const section = sections.find(s => s.id === current);
-            mobileLabel.textContent = section ? section.label : '';
-            mobileLabel.classList.toggle('visible', !!current);
-        }
+    if (mobileLabelReady && mobileLabel) {
+        const section = sections.find(s => s.id === current);
+        mobileLabel.textContent = section ? section.label : '';
+        mobileLabel.classList.toggle('visible', !!current && !citationsInView);
+    }
+
+    // Train crossing animation
+    if (trainDivider && trainLeft) {
+        const rect = trainDivider.getBoundingClientRect();
+        const progress = clamp((window.innerHeight - rect.top) / (window.innerHeight + rect.height), 0, 1);
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+        trainLeft.style.transform = `translateX(${(easedProgress * 2 - 1) * 15}vw)`;
     }
 }
-
-let mobileLabelReady = false;
-let prevScrollY = window.scrollY;
-const introOffsets = [];
 
 function populateStreets(houseImages) {
     const rows = [
@@ -188,7 +208,6 @@ function populateStreets(houseImages) {
         document.getElementById('street-row-3'),
     ];
     const totalHomes = 18;
-
     rows.forEach((row, rowIndex) => {
         for (let i = 0; i < totalHomes; i++) {
             const img = document.createElement('img');
@@ -197,6 +216,13 @@ function populateStreets(houseImages) {
             row.appendChild(img);
         }
     });
+}
+
+function createNoteEl(text) {
+    const note = document.createElement('p');
+    note.className = 'house-note';
+    note.textContent = text;
+    return note;
 }
 
 const mapStyle = {
@@ -260,7 +286,6 @@ function initSharedMap(allHouseData) {
 
 function initSection({ displayId, images, data, imageOffset }) {
     const display = document.getElementById(displayId);
-    const isMobile = window.innerWidth <= 768;
 
     for (let i = 0; i < data.length; i++) {
         const img = document.createElement('img');
@@ -273,12 +298,7 @@ function initSection({ displayId, images, data, imageOffset }) {
             const slide = document.createElement('div');
             slide.className = 'house-slide';
             slide.appendChild(img);
-            if (data[i].notes) {
-                const note = document.createElement('p');
-                note.className = 'house-note';
-                note.textContent = data[i].notes;
-                slide.appendChild(note);
-            }
+            if (data[i].notes) slide.appendChild(createNoteEl(data[i].notes));
             img.addEventListener('click', () => {
                 display.querySelectorAll('img').forEach(el => el.classList.remove('active'));
                 img.classList.add('active');
@@ -293,12 +313,7 @@ function initSection({ displayId, images, data, imageOffset }) {
                 updateMap(data[i]);
             });
             display.appendChild(img);
-            if (data[i].notes) {
-                const note = document.createElement('p');
-                note.className = 'house-note';
-                note.textContent = data[i].notes;
-                display.appendChild(note);
-            }
+            if (data[i].notes) display.appendChild(createNoteEl(data[i].notes));
         }
     }
 
@@ -312,12 +327,13 @@ function initSection({ displayId, images, data, imageOffset }) {
 
         const dots = document.createElement('div');
         dots.className = 'house-dots';
-        for (let i = 0; i < data.length; i++) {
+        const dotEls = Array.from({ length: data.length }, (_, i) => {
             const dot = document.createElement('span');
             dot.className = 'house-dot';
             if (i === 0) dot.classList.add('active');
             dots.appendChild(dot);
-        }
+            return dot;
+        });
         display.insertAdjacentElement('afterend', dots);
 
         display.addEventListener('scroll', () => {
@@ -329,7 +345,7 @@ function initSection({ displayId, images, data, imageOffset }) {
                 if (dist < minDist) { minDist = dist; closest = i; }
             });
             display.querySelectorAll('img').forEach((img, i) => img.classList.toggle('active', i === closest));
-            dots.querySelectorAll('.house-dot').forEach((dot, i) => dot.classList.toggle('active', i === closest));
+            dotEls.forEach((dot, i) => dot.classList.toggle('active', i === closest));
             updateMap(data[closest]);
         });
     } else {
@@ -402,15 +418,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    if (window.innerWidth <= 768) {
+    if (isMobile) {
         const persistentMap = document.querySelector('.persistent-map');
         const firstDisplay = document.getElementById('house-display-section-1');
+        const citationsEl = document.querySelector('.citations');
+        let firstDisplayVisible = false;
+        let citationsVisible = false;
+
+        function updateMapVisibility() {
+            const show = firstDisplayVisible && !citationsVisible;
+            persistentMap.style.opacity = show ? '1' : '0';
+            persistentMap.style.pointerEvents = show ? 'auto' : 'none';
+        }
+
         if (firstDisplay) {
             new IntersectionObserver(([entry]) => {
-                const visible = entry.isIntersecting || entry.boundingClientRect.top < 0;
-                persistentMap.style.opacity = visible ? '1' : '0';
-                persistentMap.style.pointerEvents = visible ? 'auto' : 'none';
+                firstDisplayVisible = entry.isIntersecting || entry.boundingClientRect.top < 0;
+                updateMapVisibility();
             }, { threshold: 0 }).observe(firstDisplay);
+        }
+
+        if (citationsEl) {
+            new IntersectionObserver(([entry]) => {
+                citationsVisible = entry.isIntersecting;
+                citationsInView = citationsVisible;
+                updateMapVisibility();
+            }, { threshold: 0 }).observe(citationsEl);
         }
     }
 
