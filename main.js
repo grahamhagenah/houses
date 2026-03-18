@@ -131,6 +131,8 @@ function handleParallax() {
             const counteract = Math.sin(p * Math.PI) * 0.72;
             introOffsets[i] += scrollDelta * counteract;
         }
+        const maxOffset = (section.offsetHeight - body.offsetHeight) / 2;
+        introOffsets[i] = Math.max(-maxOffset, Math.min(maxOffset, introOffsets[i]));
         body.style.transform = `translateY(${introOffsets[i]}px)`;
     });
     prevScrollY = scrollY;
@@ -222,13 +224,18 @@ function initSharedMap(allHouseData) {
         style: mapStyle,
         center: [-71.0995, 42.3876],
         zoom: 12,
-        interactive: false,
         attributionControl: false,
         padding: { top: 20, bottom: 20, left: 40, right: 40 }
     });
 
     sharedMap.on('load', () => {
         setTimeout(() => sharedMap.resize(), 100);
+        sharedMap.scrollZoom.disable();
+        sharedMap.boxZoom.disable();
+        sharedMap.doubleClickZoom.disable();
+        sharedMap.touchZoomRotate.disableRotation();
+        document.getElementById('map-zoom-in').addEventListener('click', () => sharedMap.zoomIn());
+        document.getElementById('map-zoom-out').addEventListener('click', () => sharedMap.zoomOut());
         sharedMap.addSource('active-house', {
             type: 'geojson',
             data: { type: 'Feature', geometry: { type: 'Point', coordinates: [allHouseData[0].lng, allHouseData[0].lat] } }
@@ -253,38 +260,105 @@ function initSharedMap(allHouseData) {
 
 function initSection({ displayId, images, data, imageOffset }) {
     const display = document.getElementById(displayId);
+    const isMobile = window.innerWidth <= 768;
+
     for (let i = 0; i < data.length; i++) {
         const img = document.createElement('img');
         img.src = images[(i + imageOffset) % images.length];
         img.alt = 'Home in Somerville';
         img.dataset.index = i;
         img.style.cursor = 'pointer';
-        img.addEventListener('click', () => {
-            img.scrollIntoView({ behavior: 'instant', block: 'center' });
-            display.querySelectorAll('img').forEach(el => el.classList.remove('active'));
-            img.classList.add('active');
-            updateMap(data[i]);
-        });
-        display.appendChild(img);
+
+        if (isMobile) {
+            const slide = document.createElement('div');
+            slide.className = 'house-slide';
+            slide.appendChild(img);
+            if (data[i].notes) {
+                const note = document.createElement('p');
+                note.className = 'house-note';
+                note.textContent = data[i].notes;
+                slide.appendChild(note);
+            }
+            img.addEventListener('click', () => {
+                display.querySelectorAll('img').forEach(el => el.classList.remove('active'));
+                img.classList.add('active');
+                updateMap(data[i]);
+            });
+            display.appendChild(slide);
+        } else {
+            img.addEventListener('click', () => {
+                img.scrollIntoView({ behavior: 'instant', block: 'center' });
+                display.querySelectorAll('img').forEach(el => el.classList.remove('active'));
+                img.classList.add('active');
+                updateMap(data[i]);
+            });
+            display.appendChild(img);
+            if (data[i].notes) {
+                const note = document.createElement('p');
+                note.className = 'house-note';
+                note.textContent = data[i].notes;
+                display.appendChild(note);
+            }
+        }
     }
 
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            entry.target.classList.toggle('active', entry.isIntersecting);
-            if (entry.isIntersecting) {
-                updateMap(data[parseInt(entry.target.dataset.index)]);
-            }
-        });
-    }, { rootMargin: '-35% 0px -35% 0px' });
+    if (isMobile) {
+        const section = display.closest('.map-section');
+        if (section) {
+            new IntersectionObserver(([entry]) => {
+                if (entry.isIntersecting) updateMap(data[0]);
+            }, { threshold: 0.3 }).observe(section);
+        }
 
-    display.querySelectorAll('img').forEach(img => observer.observe(img));
+        const dots = document.createElement('div');
+        dots.className = 'house-dots';
+        for (let i = 0; i < data.length; i++) {
+            const dot = document.createElement('span');
+            dot.className = 'house-dot';
+            if (i === 0) dot.classList.add('active');
+            dots.appendChild(dot);
+        }
+        display.insertAdjacentElement('afterend', dots);
+
+        display.addEventListener('scroll', () => {
+            const center = display.scrollLeft + display.offsetWidth / 2;
+            const slides = display.querySelectorAll('.house-slide');
+            let closest = 0, minDist = Infinity;
+            slides.forEach((slide, i) => {
+                const dist = Math.abs(slide.offsetLeft + slide.offsetWidth / 2 - center);
+                if (dist < minDist) { minDist = dist; closest = i; }
+            });
+            display.querySelectorAll('img').forEach((img, i) => img.classList.toggle('active', i === closest));
+            dots.querySelectorAll('.house-dot').forEach((dot, i) => dot.classList.toggle('active', i === closest));
+            updateMap(data[closest]);
+        });
+    } else {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                entry.target.classList.toggle('active', entry.isIntersecting);
+                if (entry.isIntersecting) updateMap(data[parseInt(entry.target.dataset.index)]);
+            });
+        }, { rootMargin: '-35% 0px -35% 0px' });
+        display.querySelectorAll('img').forEach(img => observer.observe(img));
+    }
 }
 
 const easing = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
 
+let currentHouseAddress = null;
+
 function updateMap(house) {
-    document.getElementById('house-info-address').textContent = house.address.replace(', Somerville', '');
-    document.getElementById('house-info-type').textContent = house.square;
+    if (house.address === currentHouseAddress) return;
+    currentHouseAddress = house.address;
+    const houseInfo = document.querySelector('.house-info');
+    houseInfo.classList.remove('house-info-enter');
+    houseInfo.classList.add('house-info-exit');
+    setTimeout(() => {
+        document.getElementById('house-info-address').textContent = house.address.replace(', Somerville', '');
+        document.getElementById('house-info-type').textContent = house.square;
+        houseInfo.classList.remove('house-info-exit');
+        houseInfo.classList.add('house-info-enter');
+    }, 180);
     if (sharedMap && sharedMap.getSource('active-house')) {
         sharedMap.getSource('active-house').setData({
             type: 'Feature',
@@ -327,6 +401,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             imageOffset: i * HOUSES_PER_SECTION
         });
     });
+
+    if (window.innerWidth <= 768) {
+        const persistentMap = document.querySelector('.persistent-map');
+        const firstDisplay = document.getElementById('house-display-section-1');
+        if (firstDisplay) {
+            new IntersectionObserver(([entry]) => {
+                const visible = entry.isIntersecting || entry.boundingClientRect.top < 0;
+                persistentMap.style.opacity = visible ? '1' : '0';
+                persistentMap.style.pointerEvents = visible ? 'auto' : 'none';
+            }, { threshold: 0 }).observe(firstDisplay);
+        }
+    }
 
     window.addEventListener('scroll', handleParallax);
 });
