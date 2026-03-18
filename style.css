@@ -58,6 +58,10 @@ body {
     z-index: 2;
 }
 
+#street-row-1 {
+    background: linear-gradient(to bottom, transparent, #faf8f5 40%);
+}
+
 #street-row-1 img {
     height: 140px;
     filter: saturate(0.5) brightness(1.4) contrast(0.7);
@@ -72,17 +76,26 @@ body {
     height: 200px;
 }
 
-.highway-divider {
-    width: 100%;
+.intro-highway-wrapper {
     position: relative;
-    z-index: 2;
     overflow: hidden;
+}
+
+.highway-divider {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 10;
+    overflow: hidden;
+    max-height: 45vh;
+    transform: translateY(100%);
 }
 
 .highway-divider img {
     width: 100%;
     display: block;
-    object-fit: cover;
 }
 
 .hero-title {
@@ -92,6 +105,23 @@ body {
     line-height: 1.1;
     letter-spacing: -0.02em;
     color: #000;
+}
+
+.hero-subtitle {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+    color: #444;
+    margin-top: 0.75rem;
+    letter-spacing: 0.01em;
+}
+
+.hero-byline {
+    font-size: 0.75rem;
+    color: #777;
+    margin-top: 1.25rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
 .city-name {
@@ -160,15 +190,18 @@ body {
 }
 
 .intro-section {
-    padding: 6rem 4rem;
+    min-height: 100vh;
+    padding: 0 4rem;
     display: flex;
     justify-content: center;
+    align-items: center;
     position: relative;
     z-index: 1;
 }
 
 .intro-body {
     max-width: 640px;
+    will-change: transform;
 }
 
 .intro-body h2 {
@@ -181,7 +214,7 @@ body {
 }
 
 .intro-body p {
-    font-size: 1rem;
+    font-size: 1.2rem;
     line-height: 1.9;
     color: #222;
     margin-bottom: 1.75rem;
@@ -243,7 +276,7 @@ body {
     align-items: start;
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0 4rem;
+    padding: 8rem 4rem 0;
     gap: 4rem;
 }
 

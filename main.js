@@ -118,10 +118,41 @@ function handleParallax() {
     row2.style.transform = `translateY(${scrollY * 0.06}px)`;
     row3.style.transform = `translateY(${scrollY * 0.02}px)`;
 
-    const divider = document.querySelector('.highway-divider');
-    if (divider) {
-        const extra = (scrollY - divider.offsetTop) * 0.3;
-        divider.style.transform = `translateY(${-Math.max(0, extra)}px)`;
+    const scrollDelta = scrollY - prevScrollY;
+    document.querySelectorAll('.intro-section').forEach((section, i) => {
+        const body = section.querySelector('.intro-body');
+        if (!body) return;
+        if (introOffsets[i] === undefined) introOffsets[i] = 0;
+        const rect = section.getBoundingClientRect();
+        const inView = rect.top < window.innerHeight && rect.bottom > 0;
+        if (inView) {
+            const progress = (window.innerHeight - rect.bottom) / (window.innerHeight + rect.height);
+            const p = Math.max(0, Math.min(1, progress));
+            const counteract = Math.sin(p * Math.PI) * 0.72;
+            introOffsets[i] += scrollDelta * counteract;
+        }
+        body.style.transform = `translateY(${introOffsets[i]}px)`;
+    });
+    prevScrollY = scrollY;
+
+    // Highway: scroll-tied translateY so it rises from below naturally
+    const highway = document.querySelector('.highway-divider');
+    const wrapper = document.querySelector('.intro-highway-wrapper');
+    const allSections = document.querySelector('.all-sections-wrapper');
+    if (highway && wrapper && allSections) {
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const allSectionsRect = allSections.getBoundingClientRect();
+        if (wrapperRect.top > 0) {
+            // Wrapper entering: highway rises from below tied to scroll
+            const progress = Math.max(0, Math.min(1, 1 - wrapperRect.top / window.innerHeight));
+            highway.style.transform = `translateY(${(1 - progress) * 100}%)`;
+        } else if (allSectionsRect.top < window.innerHeight) {
+            // All-sections entering: highway scrolls off screen upward at page speed
+            const exit = Math.max(0, Math.min(1, 1 - allSectionsRect.top / window.innerHeight));
+            highway.style.transform = `translateY(-${exit * window.innerHeight}px)`;
+        } else {
+            highway.style.transform = 'translateY(0)';
+        }
     }
 
     // Update active nav item
@@ -145,6 +176,8 @@ function handleParallax() {
 }
 
 let mobileLabelReady = false;
+let prevScrollY = window.scrollY;
+const introOffsets = [];
 
 function populateStreets(houseImages) {
     const rows = [
