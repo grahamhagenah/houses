@@ -1,4 +1,5 @@
 [
+  { "address": "51 Curtis St, Somerville", "square": "Teele Square", "lat": 42.3955, "lng": -71.1095, "notes": "A well-preserved Victorian with ornate woodwork and a distinctive wraparound porch typical of late nineteenth-century Somerville craftsmanship." },
   { "address": "139 W Adams St, Somerville", "square": "Magoun Square", "lat": 42.3901, "lng": -71.1012, "notes": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore." },
   { "address": "47 Summer St, Somerville", "square": "Ball Square", "lat": 42.3876, "lng": -71.0932 },
   { "address": "215 Highland Ave, Somerville", "square": "Teele Square", "lat": 42.3921, "lng": -71.1089, "notes": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo." },
@@ -17,6 +18,5 @@
   { "address": "88 Central St, Somerville", "square": "Ball Square", "lat": 42.3871, "lng": -71.0998, "notes": "Nam libero tempore cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime." },
   { "address": "152 Summer St, Somerville", "square": "Ball Square", "lat": 42.3896, "lng": -71.0944 },
   { "address": "29 Vine St, Somerville", "square": "Teele Square", "lat": 42.3942, "lng": -71.1103, "notes": "Temporibus autem quibusdam et aut officiis debitis rerum necessitatibus saepe eveniet ut et voluptates." },
-  { "address": "67 School St, Somerville", "square": "Davis Square", "lat": 42.3855, "lng": -71.1067 },
-  { "address": "311 Elm St, Somerville", "square": "Davis Square", "lat": 42.3918, "lng": -71.1015, "notes": "Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur." }
+  { "address": "67 School St, Somerville", "square": "Davis Square", "lat": 42.3855, "lng": -71.1067 }
 ]
